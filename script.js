@@ -3,16 +3,20 @@
    HTML5 + CSS3 + Vanilla JavaScript
    Dados persistidos no LocalStorage do navegador.
    ========================================================= */
+
 /* ---------- Utilitários ---------- */
 const $  = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const fmt = (n) => BRL.format(Number.isFinite(n) ? n : 0);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const todayISO = () => new Date().toISOString().slice(0, 10);
+
 /* ---------- Persistência ---------- */
 const STORAGE_KEY = "profit3d.v1";
 const state = load();
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -27,11 +31,13 @@ function baseState() {
     calc: { extras: [], others: [] }, // linhas dinâmicas
     sales: [],    // { id, name, date, cost, price, profit, status }
     expenses: [], // { id, desc, value, date }
+    finance: { capital: 0, dividends: 0 },
   };
 }
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
+
 /* ---------- Navegação por abas ---------- */
 $$(".tab").forEach((t) =>
   t.addEventListener("click", () => {
@@ -41,6 +47,7 @@ $$(".tab").forEach((t) =>
     $("#" + t.dataset.tab).classList.add("active");
   })
 );
+
 /* =========================================================
    CALCULADORA
    ========================================================= */
@@ -48,6 +55,7 @@ const calcInputs = [
   "prodName", "filamentGrams", "filamentPrice",
   "printHours", "printerWatts", "energyPrice", "salePrice",
 ];
+
 function renderDyn(listId, arr, placeholderName) {
   const box = $("#" + listId);
   box.innerHTML = "";
@@ -66,6 +74,7 @@ function renderDyn(listId, arr, placeholderName) {
     box.appendChild(el);
   });
 }
+
 $("#addExtra").addEventListener("click", () => {
   state.calc.extras.push({ name: "", value: 0 });
   save();
@@ -76,30 +85,36 @@ $("#addOther").addEventListener("click", () => {
   save();
   renderDyn("otherList", state.calc.others, "Descrição do gasto");
 });
+
 function recalc() {
   const grams   = parseFloat($("#filamentGrams").value) || 0;
   const pricekg = parseFloat($("#filamentPrice").value) || 0;
   const hours   = parseFloat($("#printHours").value) || 0;
   const watts   = parseFloat($("#printerWatts").value) || 0;
   const kwh     = parseFloat($("#energyPrice").value) || 0;
+
   const filamentCost = (grams / 1000) * pricekg;
   const energyCost   = (watts / 1000) * hours * kwh;
   const extrasCost   = state.calc.extras.reduce((s, x) => s + (x.value || 0), 0);
   const otherCost    = state.calc.others.reduce((s, x) => s + (x.value || 0), 0);
   const total = filamentCost + energyCost + extrasCost + otherCost;
+
   $("#sumFilament").textContent = fmt(filamentCost);
   $("#sumEnergy").textContent   = fmt(energyCost);
   $("#sumExtras").textContent   = fmt(extrasCost);
   $("#sumOther").textContent    = fmt(otherCost);
   $("#sumTotal").textContent    = fmt(total);
+
   $("#price2x").textContent = fmt(total * 2);
   $("#price3x").textContent = fmt(total * 3);
   $("#price4x").textContent = fmt(total * 4);
 }
+
 calcInputs.forEach((id) => {
   const el = $("#" + id);
   if (el) el.addEventListener("input", recalc);
 });
+
 $("#clearCalc").addEventListener("click", () => {
   calcInputs.forEach((id) => ($("#" + id).value = ""));
   state.calc = { extras: [], others: [] };
@@ -108,12 +123,15 @@ $("#clearCalc").addEventListener("click", () => {
   renderDyn("otherList", state.calc.others, "Descrição do gasto");
   recalc();
 });
+
 $("#saveSale").addEventListener("click", () => {
   const name = $("#prodName").value.trim();
   if (!name) { alert("Informe o nome do produto."); return; }
+
   const cost  = parseFloat($("#sumTotal").textContent.replace(/[^\d,.-]/g, "").replace(".", "").replace(",", ".")) || 0;
   const price = parseFloat($("#salePrice").value) || 0;
   const profit = price - cost;
+
   state.sales.unshift({
     id: uid(),
     name,
@@ -128,6 +146,7 @@ $("#saveSale").addEventListener("click", () => {
   renderReports();
   alert("Registro salvo em Vendas!");
 });
+
 /* =========================================================
    VENDAS
    ========================================================= */
@@ -136,6 +155,7 @@ function renderSales() {
   tbody.innerHTML = "";
   $("#salesEmpty").classList.toggle("hidden", state.sales.length > 0);
   $("#salesTable").classList.toggle("hidden", state.sales.length === 0);
+
   state.sales.forEach((s) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -160,6 +180,7 @@ function renderSales() {
     tbody.appendChild(tr);
   });
 }
+
 /* =========================================================
    GASTOS
    ========================================================= */
@@ -175,11 +196,13 @@ $("#expenseForm").addEventListener("submit", (e) => {
   e.target.reset();
   $("#expDate").value = todayISO();
 });
+
 function renderExpenses() {
   const tbody = $("#expensesTable tbody");
   tbody.innerHTML = "";
   $("#expensesEmpty").classList.toggle("hidden", state.expenses.length > 0);
   $("#expensesTable").classList.toggle("hidden", state.expenses.length === 0);
+
   state.expenses.forEach((x) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -207,6 +230,7 @@ function renderExpenses() {
     tbody.appendChild(tr);
   });
 }
+
 /* =========================================================
    RELATÓRIOS
    ========================================================= */
@@ -215,20 +239,63 @@ function renderReports() {
   const totalSales   = sold.reduce((s, x) => s + x.price, 0);
   const totalProfit  = sold.reduce((s, x) => s + x.profit, 0);
   const totalExpense = state.expenses.reduce((s, x) => s + x.value, 0);
+  const capital   = state.finance.capital || 0;
+  const dividends = state.finance.dividends || 0;
+  const balance   = totalProfit - totalExpense + capital - dividends;
+
   $("#rTotalSales").textContent    = fmt(totalSales);
-  $("#rTotalProfit").textContent   = fmt(totalProfit - totalExpense);
+  $("#rTotalProfit").textContent   = fmt(totalProfit);
   $("#rTotalExpenses").textContent = fmt(totalExpense);
+  $("#rBalance").textContent       = fmt(balance);
   $("#rCountSold").textContent     = sold.length;
   $("#rCountPending").textContent  = state.sales.length - sold.length;
   $("#rAvgTicket").textContent     = fmt(sold.length ? totalSales / sold.length : 0);
+  $("#rCapital").textContent       = fmt(capital);
+  $("#rDividends").textContent     = fmt(dividends);
+
+  // Detalhes expansíveis
+  const profitBox = $("#detailProfit");
+  profitBox.innerHTML = sold.length
+    ? `<table class="mini"><thead><tr><th>Produto</th><th>Custo</th><th>Venda</th><th>Lucro</th></tr></thead><tbody>${
+        sold.map(s => `<tr><td>${escapeHtml(s.name)}</td><td>${fmt(s.cost)}</td><td>${fmt(s.price)}</td><td style="color:${s.profit>=0?'var(--primary)':'var(--danger)'}">${fmt(s.profit)}</td></tr>`).join("")
+      }<tr class="sum"><td colspan="3"><strong>Lucro total</strong></td><td><strong>${fmt(totalProfit)}</strong></td></tr></tbody></table>`
+    : `<p class="muted">Nenhuma venda concluída ainda.</p>`;
+
+  const expBox = $("#detailExpenses");
+  expBox.innerHTML = state.expenses.length
+    ? `<table class="mini"><thead><tr><th>Descrição</th><th>Data</th><th>Valor</th></tr></thead><tbody>${
+        state.expenses.map(x => `<tr><td>${escapeHtml(x.desc)}</td><td>${formatDate(x.date)}</td><td>${fmt(x.value)}</td></tr>`).join("")
+      }<tr class="sum"><td colspan="2"><strong>Total</strong></td><td><strong>${fmt(totalExpense)}</strong></td></tr></tbody></table>`
+    : `<p class="muted">Nenhum gasto registrado.</p>`;
+
+  $("#detailBalance").innerHTML = `
+    <table class="mini"><tbody>
+      <tr><td>(+) Lucro das vendas</td><td>${fmt(totalProfit)}</td></tr>
+      <tr><td>(−) Total de gastos</td><td style="color:var(--danger)">− ${fmt(totalExpense)}</td></tr>
+      <tr><td>(+) Capital investido</td><td>${fmt(capital)}</td></tr>
+      <tr><td>(−) Dividendos retirados</td><td style="color:var(--danger)">− ${fmt(dividends)}</td></tr>
+      <tr class="sum"><td><strong>Saldo líquido da loja</strong></td><td><strong style="color:${balance>=0?'var(--primary)':'var(--danger)'}">${fmt(balance)}</strong></td></tr>
+    </tbody></table>
+    <p class="muted" style="font-size:.78rem; margin-top:8px;">Fórmula: lucro das vendas − gastos + capital investido − dividendos.</p>
+  `;
 }
-    calc: { extras: [], others: [] }, // linhas dinâmicas
-    sales: [],    // { id, name, date, cost, price, profit, status }
-    expenses: [], // { id, desc, value, date }
-    finance: { capital: 0, dividends: 0 },
-  };
-}
-function save() {
+
+/* Capital / Dividendos */
+document.addEventListener("input", (e) => {
+  if (e.target.id === "capitalInput") { state.finance.capital = parseFloat(e.target.value) || 0; save(); renderReports(); }
+  if (e.target.id === "dividendsInput") { state.finance.dividends = parseFloat(e.target.value) || 0; save(); renderReports(); }
+});
+
+/* Toggle detalhes */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".toggle-detail");
+  if (!btn) return;
+  const card = btn.closest(".expandable");
+  const box = card.querySelector(".detail-box");
+  const open = box.classList.toggle("hidden");
+  btn.textContent = open ? "Ver detalhes ▾" : "Ocultar detalhes ▴";
+});
+
 /* =========================================================
    EXPORTAÇÃO / IMPORTAÇÃO
    ========================================================= */
@@ -241,6 +308,7 @@ document.addEventListener("click", (e) => {
   if (key === "expenses-json")  download("gastos.json", JSON.stringify(state.expenses, null, 2));
   if (key === "expenses-csv")   download("gastos.csv", toCSV(state.expenses, ["desc", "value", "date"]));
 });
+
 $("#exportAll").addEventListener("click", () => {
   download("3d-profit-manager-backup.json", JSON.stringify(state, null, 2));
 });
@@ -259,6 +327,7 @@ $("#wipeAll").addEventListener("click", () => {
   Object.assign(state, baseState());
   init();
 });
+
 function toCSV(rows, cols) {
   const header = cols.join(",");
   const body = rows.map((r) => cols.map((c) => csvCell(r[c])).join(",")).join("\n");
@@ -276,6 +345,7 @@ function download(name, content) {
   a.href = url; a.download = name; a.click();
   URL.revokeObjectURL(url);
 }
+
 /* ---------- Helpers ---------- */
 function escapeHtml(s = "") {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -285,11 +355,14 @@ function formatDate(iso) {
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
+
 /* ---------- Init ---------- */
 function init() {
   $("#year").textContent = new Date().getFullYear();
   renderDyn("extrasList", state.calc.extras, "Nome do material");
   renderDyn("otherList", state.calc.others, "Descrição do gasto");
+  $("#capitalInput").value   = state.finance.capital   || "";
+  $("#dividendsInput").value = state.finance.dividends || "";
   renderSales();
   renderExpenses();
   renderReports();
