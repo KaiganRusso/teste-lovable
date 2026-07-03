@@ -222,6 +222,13 @@ function renderReports() {
   $("#rCountPending").textContent  = state.sales.length - sold.length;
   $("#rAvgTicket").textContent     = fmt(sold.length ? totalSales / sold.length : 0);
 }
+    calc: { extras: [], others: [] }, // linhas dinâmicas
+    sales: [],    // { id, name, date, cost, price, profit, status }
+    expenses: [], // { id, desc, value, date }
+    finance: { capital: 0, dividends: 0 },
+  };
+}
+function save() {
 /* =========================================================
    EXPORTAÇÃO / IMPORTAÇÃO
    ========================================================= */
