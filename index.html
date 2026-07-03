@@ -144,33 +144,53 @@
         <p class="empty" id="expensesEmpty">Nenhum gasto cadastrado.</p>
       </div>
     </section>
-    <!-- ================== RELATÓRIOS ================== -->
+<!-- ================== RELATÓRIOS ================== -->
     <section id="reports" class="panel">
+      <div class="grid two" style="margin-bottom:1rem;">
+        <div class="card">
+          <h3 style="margin-top:0;">Capital inicial investido</h3>
+          <label>Valor investido na loja (R$)
+            <input type="number" id="capitalInput" min="0" step="0.01" placeholder="0,00" />
+          </label>
+          <p class="muted" style="font-size:.8rem; margin:0;">Dinheiro que você colocou do próprio bolso para começar/manter a loja.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">Dividendos / Retiradas</h3>
+          <label>Total já retirado (R$)
+            <input type="number" id="dividendsInput" min="0" step="0.01" placeholder="0,00" />
+          </label>
+          <p class="muted" style="font-size:.8rem; margin:0;">Valor que você já sacou do caixa como lucro pessoal.</p>
+        </div>
+      </div>
       <div class="grid three">
         <div class="card stat"><span>Total vendido</span><strong id="rTotalSales">R$ 0,00</strong></div>
         <div class="card stat"><span>Lucro líquido</span><strong id="rTotalProfit">R$ 0,00</strong></div>
         <div class="card stat"><span>Total de gastos</span><strong id="rTotalExpenses">R$ 0,00</strong></div>
+        <div class="card stat expandable" data-detail="profit">
+          <span>Lucro total (vendas)</span>
+          <strong id="rTotalProfit">R$ 0,00</strong>
+          <button class="btn ghost toggle-detail" type="button">Ver detalhes ▾</button>
+          <div class="detail-box hidden" id="detailProfit"></div>
+        </div>
+        <div class="card stat expandable" data-detail="expenses">
+          <span>Total de gastos</span>
+          <strong id="rTotalExpenses">R$ 0,00</strong>
+          <button class="btn ghost toggle-detail" type="button">Ver detalhes ▾</button>
+          <div class="detail-box hidden" id="detailExpenses"></div>
+        </div>
+        <div class="card stat expandable" data-detail="balance">
+          <span>Economia total da loja</span>
+          <strong id="rBalance">R$ 0,00</strong>
+          <button class="btn ghost toggle-detail" type="button">Ver detalhes ▾</button>
+          <div class="detail-box hidden" id="detailBalance"></div>
+        </div>
+      </div>
+      <div class="grid three" style="margin-top:1rem;">
+        <div class="card stat"><span>Total vendido (bruto)</span><strong id="rTotalSales">R$ 0,00</strong></div>
         <div class="card stat"><span>Vendas concluídas</span><strong id="rCountSold">0</strong></div>
         <div class="card stat"><span>Pendentes</span><strong id="rCountPending">0</strong></div>
         <div class="card stat"><span>Ticket médio</span><strong id="rAvgTicket">R$ 0,00</strong></div>
+        <div class="card stat"><span>Capital investido</span><strong id="rCapital">R$ 0,00</strong></div>
+        <div class="card stat"><span>Dividendos retirados</span><strong id="rDividends">R$ 0,00</strong></div>
       </div>
       <div class="card" style="margin-top:1rem;">
-        <h2>Backup geral</h2>
-        <p class="muted">Exporte ou importe todos os dados salvos localmente.</p>
-        <div class="actions">
-          <button class="btn primary" id="exportAll">Exportar tudo (JSON)</button>
-          <label class="btn ghost">
-            Importar JSON
-            <input type="file" id="importAll" accept="application/json" hidden />
-          </label>
-          <button class="btn danger" id="wipeAll">Apagar todos os dados</button>
-        </div>
-      </div>
-    </section>
-  </main>
-  <footer class="foot">
-    <small>© <span id="year"></span> 3D Profit Manager · Dados salvos localmente no seu navegador.</small>
-  </footer>
-  <script src="script.js"></script>
-</body>
-</html>
