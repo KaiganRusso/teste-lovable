@@ -23,15 +23,19 @@
       <button class="tab" data-tab="reports">Relatórios</button>
     </nav>
   </header>
+
   <main class="container">
+
     <!-- ================== CALCULADORA ================== -->
     <section id="calc" class="panel active">
       <div class="grid two">
         <div class="card">
           <h2>Dados da Impressão</h2>
+
           <label>Nome do produto/impressão
             <input type="text" id="prodName" placeholder="Ex: Vaso geométrico" />
           </label>
+
           <div class="row">
             <label>Filamento (g)
               <input type="number" id="filamentGrams" min="0" step="0.1" placeholder="0" />
@@ -40,6 +44,7 @@
               <input type="number" id="filamentPrice" min="0" step="0.01" placeholder="0" />
             </label>
           </div>
+
           <div class="row">
             <label>Tempo de impressão (h)
               <input type="number" id="printHours" min="0" step="0.1" placeholder="0" />
@@ -48,17 +53,22 @@
               <input type="number" id="printerWatts" min="0" step="1" placeholder="0" />
             </label>
           </div>
+
           <label>Preço energia (R$/kWh)
             <input type="number" id="energyPrice" min="0" step="0.01" placeholder="0" />
           </label>
+
           <hr />
+
           <h3>Materiais extras</h3>
           <div id="extrasList" class="dyn-list"></div>
           <button class="btn ghost" id="addExtra" type="button">+ Adicionar material</button>
+
           <h3 style="margin-top:1.2rem;">Outros gastos</h3>
           <div id="otherList" class="dyn-list"></div>
           <button class="btn ghost" id="addOther" type="button">+ Adicionar gasto</button>
         </div>
+
         <div class="card summary-card">
           <h2>Resumo & Precificação</h2>
           <ul class="summary">
@@ -68,6 +78,7 @@
             <li><span>Outros gastos</span><strong id="sumOther">R$ 0,00</strong></li>
             <li class="total"><span>Custo total</span><strong id="sumTotal">R$ 0,00</strong></li>
           </ul>
+
           <h3>Sugestão de preço de venda</h3>
           <div class="price-grid">
             <div class="price-tag">
@@ -83,9 +94,11 @@
               <strong id="price4x">R$ 0,00</strong>
             </div>
           </div>
+
           <label style="margin-top:1rem;">Preço de venda praticado (R$)
             <input type="number" id="salePrice" min="0" step="0.01" placeholder="0" />
           </label>
+
           <div class="actions">
             <button class="btn primary" id="saveSale">Registrar em Vendas</button>
             <button class="btn ghost" id="clearCalc">Limpar</button>
@@ -93,6 +106,7 @@
         </div>
       </div>
     </section>
+
     <!-- ================== VENDAS ================== -->
     <section id="sales" class="panel">
       <div class="card">
@@ -117,6 +131,7 @@
         <p class="empty" id="salesEmpty">Nenhuma venda registrada ainda.</p>
       </div>
     </section>
+
     <!-- ================== GASTOS ================== -->
     <section id="expenses" class="panel">
       <div class="card">
@@ -127,12 +142,14 @@
             <button class="btn ghost" data-export="expenses-csv">Exportar CSV</button>
           </div>
         </div>
+
         <form id="expenseForm" class="row expense-form">
           <input type="text" id="expDesc" placeholder="Descrição (ex: nozzle 0.4)" required />
           <input type="number" id="expValue" placeholder="Valor R$" step="0.01" min="0" required />
           <input type="date" id="expDate" required />
           <button class="btn primary" type="submit">Adicionar</button>
         </form>
+
         <div class="table-wrap">
           <table id="expensesTable">
             <thead>
@@ -144,7 +161,8 @@
         <p class="empty" id="expensesEmpty">Nenhum gasto cadastrado.</p>
       </div>
     </section>
-<!-- ================== RELATÓRIOS ================== -->
+
+    <!-- ================== RELATÓRIOS ================== -->
     <section id="reports" class="panel">
       <div class="grid two" style="margin-bottom:1rem;">
         <div class="card">
@@ -162,10 +180,8 @@
           <p class="muted" style="font-size:.8rem; margin:0;">Valor que você já sacou do caixa como lucro pessoal.</p>
         </div>
       </div>
+
       <div class="grid three">
-        <div class="card stat"><span>Total vendido</span><strong id="rTotalSales">R$ 0,00</strong></div>
-        <div class="card stat"><span>Lucro líquido</span><strong id="rTotalProfit">R$ 0,00</strong></div>
-        <div class="card stat"><span>Total de gastos</span><strong id="rTotalExpenses">R$ 0,00</strong></div>
         <div class="card stat expandable" data-detail="profit">
           <span>Lucro total (vendas)</span>
           <strong id="rTotalProfit">R$ 0,00</strong>
@@ -185,6 +201,7 @@
           <div class="detail-box hidden" id="detailBalance"></div>
         </div>
       </div>
+
       <div class="grid three" style="margin-top:1rem;">
         <div class="card stat"><span>Total vendido (bruto)</span><strong id="rTotalSales">R$ 0,00</strong></div>
         <div class="card stat"><span>Vendas concluídas</span><strong id="rCountSold">0</strong></div>
@@ -193,4 +210,26 @@
         <div class="card stat"><span>Capital investido</span><strong id="rCapital">R$ 0,00</strong></div>
         <div class="card stat"><span>Dividendos retirados</span><strong id="rDividends">R$ 0,00</strong></div>
       </div>
+
       <div class="card" style="margin-top:1rem;">
+        <h2>Backup geral</h2>
+        <p class="muted">Exporte ou importe todos os dados salvos localmente.</p>
+        <div class="actions">
+          <button class="btn primary" id="exportAll">Exportar tudo (JSON)</button>
+          <label class="btn ghost">
+            Importar JSON
+            <input type="file" id="importAll" accept="application/json" hidden />
+          </label>
+          <button class="btn danger" id="wipeAll">Apagar todos os dados</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <small>© <span id="year"></span> 3D Profit Manager · Dados salvos localmente no seu navegador.</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
